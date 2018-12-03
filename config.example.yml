@@ -1,0 +1,7 @@
+watch:
+  - GLOB_PATTERN_TO_ARTICLE     #FIXME
+  - MAKE_IT_READS_TILDE ~       #TODO
+report:
+  - per article
+  - per year
+  - per month of year

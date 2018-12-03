@@ -1,30 +1,96 @@
 #!/usr/bin/env python3
 
-import sys
 import re
+import glob
+import yaml
 
 from collections import defaultdict
 
-import deepcut
+
+class Article(object):
+    EXTRACT_DATE = r'/([0-9]{4})-([0-9]{2})-([0-9]{2})-(.*)\.md'
+
+    def __init__(self, filename):
+        self.filename = filename
+        self.get_content()
+        self.get_meta()
+        self.get_stats()
+
+    def get_content(self):
+        # TODO handle metadata, external data, and styling from markdown
+        #       - strip frontmatter
+        #       - flatten h1..h6, em, link, list, etc
+        #       - simplify image, code block, math block, iframe vid/twt
+        self.content = open(self.filename).read()
+
+    def get_meta(self):
+        year, month, day, title = re.findall(self.EXTRACT_DATE, self.filename)[0]
+        self.year = year
+        self.month = month
+        self.day = day
+        self.title = title
+
+    def get_stats(self):
+        self.number_chars = len(self.content)
+        self.number_words = len(self.content.split())
 
 
-PATTERN = r'/([0-9]{4})-([0-9]{2})-([0-9]{2})-(.*)\.md'
+class WriterGoal(object):
+    def __init__(self):
+        self.load_config()
+        self.articles = {}
+        self.analyse()
 
-by_y = defaultdict(int)
-by_ym = defaultdict(int)
+    def load_config(self):
+        # let python handle ioerror by themselves, for now
+        self.config = yaml.load(open('config.yml'))
 
-for filename in sys.argv[1:]:
-    content = open(filename).read()
-    year, month, day, title = re.findall(PATTERN, filename)[0]
-    words = deepcut.tokenize(content)
-    by_y[year] += len(words)
-    by_ym[year,month] += len(words)
-    print(f'{title}: {len(words)}')
+    def iter_files(self):
+        for pattern in self.config['watch']:
+            yield from glob.iglob(pattern)
 
-print()
-for y, values in sorted(by_y.items()):
-    print(f'{y}: {values}')
+    def analyse(self):
+        for filename in self.iter_files():
+            if filename not in self.articles:
+                self.articles[filename] = Article(filename)
 
-print()
-for ym, values in sorted(by_ym.items()):
-    print(f'{ym}: {values}')
+    def make_report(self):
+        for criteria in self.config['report']:
+            report_criteria = 'report_' + criteria.lower().replace(' ', '_')
+            getattr(self, report_criteria)()
+
+    def report_per_article(self):
+        print(f'{"article title":^30} | year | {"wc":^6}')
+        print(f'{"-"*30} | ---- | {"-"*6}')
+        for article in sorted(self.articles.values(), key=lambda x: x.number_words):
+            print(f'{article.title[:30]:<30} | {article.year} | {article.number_words:>6}')
+
+    def report_per_year(self):
+        memo = defaultdict(int)
+        for article in self.articles.values():
+            memo[article.year] += article.number_words
+        print(f'year | {"wc":^6}')
+        print(f'---- | {"-"*6}')
+        for year, freq in sorted(memo.items()):
+            print(f'{year} | {freq:>6}')
+
+    def report_per_month_of_year(self):
+        memo = defaultdict(int)
+        for article in self.articles.values():
+            memo[article.year,article.month] += article.number_words
+        print(f'yyyy-mm | {"wc":^6}')
+        print(f'------- | {"-"*6}')
+        for (year, month), freq in sorted(memo.items()):
+            print(f'{year}-{month} | {freq:>6}')
+
+    def report_per_week_of_year(self):
+        raise NotImplementedError
+
+
+def main():
+    writer_goal = WriterGoal()
+    writer_goal.make_report()
+
+
+if __name__ == '__main__':
+    main()
