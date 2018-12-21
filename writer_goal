@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import re
+import os
 import glob
 import yaml
 import datetime
@@ -52,7 +53,7 @@ class WriterGoal(object):
 
     def iter_files(self):
         for pattern in self.config['watch']:
-            yield from glob.iglob(pattern)
+            yield from glob.iglob(os.path.expanduser(pattern))
 
     def analyse(self):
         for filename in self.iter_files():

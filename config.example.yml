@@ -1,7 +1,7 @@
 watch:
-  - GLOB_PATTERN_TO_ARTICLE     #FIXME
-  - MAKE_IT_READS_TILDE ~       #TODO
+  - ~/myblog.github.io/_posts/*.md
 report:
   - per article
-  - per year
+  - per week of year
   - per month of year
+  - per year
