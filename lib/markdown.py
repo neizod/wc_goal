@@ -1,7 +1,7 @@
 import re
 
-import frontmatter                      # pip install python-frontmatter
-from mistune import Renderer, Markdown  # pip install mistune
+import frontmatter
+from mistune import Renderer, Markdown
 
 
 class StripMarkdownRenderer(Renderer):
