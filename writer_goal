@@ -3,12 +3,16 @@
 import re
 import glob
 import yaml
-
 from collections import defaultdict
+
+from pythainlp import word_tokenize     # pip install pythainlp
+
+from lib import markdown
 
 
 class Article(object):
     EXTRACT_DATE = r'/([0-9]{4})-([0-9]{2})-([0-9]{2})-(.*)\.md'
+    MARKDOWN = markdown.Markdown(markdown.StripMarkdownRenderer())
 
     def __init__(self, filename):
         self.filename = filename
@@ -17,11 +21,8 @@ class Article(object):
         self.get_stats()
 
     def get_content(self):
-        # TODO handle metadata, external data, and styling from markdown
-        #       - strip frontmatter
-        #       - flatten h1..h6, em, link, list, etc
-        #       - simplify image, code block, math block, iframe vid/twt
-        self.content = open(self.filename).read()
+        filecontent = markdown.frontmatter.load(open(self.filename))
+        self.content = self.MARKDOWN.render(filecontent.content)
 
     def get_meta(self):
         year, month, day, title = re.findall(self.EXTRACT_DATE, self.filename)[0]
@@ -32,7 +33,7 @@ class Article(object):
 
     def get_stats(self):
         self.number_chars = len(self.content)
-        self.number_words = len(self.content.split())
+        self.number_words = len(word_tokenize(self.content))
 
 
 class WriterGoal(object):
