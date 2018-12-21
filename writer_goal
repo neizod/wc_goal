@@ -3,6 +3,7 @@
 import re
 import glob
 import yaml
+import datetime
 from collections import defaultdict
 
 from pythainlp import word_tokenize     # pip install pythainlp
@@ -26,9 +27,10 @@ class Article(object):
 
     def get_meta(self):
         year, month, day, title = re.findall(self.EXTRACT_DATE, self.filename)[0]
-        self.year = year
-        self.month = month
-        self.day = day
+        self.year = int(year)
+        self.month = int(month)
+        self.day = int(day)
+        self.week = datetime.date(self.year, self.month, self.day).isocalendar()[1]
         self.title = title
 
     def get_stats(self):
@@ -95,11 +97,20 @@ class WriterGoal(object):
         print(f'------- | { "-"*6 } | {  "-"*30  }')
         for (year, month), freq in sorted(memo.items()):
             hist = round(30*freq/hi)
-            print(f'{year}-{month} | {freq:>6} | {self.BLOCK_CHAR*hist}')
+            print(f'{year}-{month:02} | {freq:>6} | {self.BLOCK_CHAR*hist}')
         print()
 
     def report_per_week_of_year(self):
-        raise NotImplementedError
+        memo = defaultdict(int)
+        for article in self.articles.values():
+            memo[article.year,article.week] += article.number_words
+        hi = max(value for value in memo.values())
+        print(f'yyyy-ww | {"wc":^6} | {"hist":^30}')
+        print(f'------- | { "-"*6 } | {  "-"*30  }')
+        for (year, week), freq in sorted(memo.items()):
+            hist = round(30*freq/hi)
+            print(f'{year}-{week:02} | {freq:>6} | {self.BLOCK_CHAR*hist}')
+        print()
 
 
 def main():
