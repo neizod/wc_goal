@@ -37,6 +37,8 @@ class Article(object):
 
 
 class WriterGoal(object):
+    BLOCK_CHAR = '\u2592'
+
     def __init__(self):
         self.load_config()
         self.articles = {}
@@ -61,28 +63,40 @@ class WriterGoal(object):
             getattr(self, report_criteria)()
 
     def report_per_article(self):
-        print(f'{"article title":^30} | year | {"wc":^6}')
-        print(f'{"-"*30} | ---- | {"-"*6}')
-        for article in sorted(self.articles.values(), key=lambda x: x.number_words):
-            print(f'{article.title[:30]:<30} | {article.year} | {article.number_words:>6}')
+        memo = defaultdict(int)
+        for article in self.articles.values():
+            memo[article.year,article.month,article.day,article.title] += article.number_words
+        hi = max(value for value in memo.values())
+        print(f'year | {"article title":^30} | {"wc":^6} | {"hist":^30}')
+        print(f'---- | {       "-"*30      } | { "-"*6 } | {  "-"*30  }')
+        for (year, _, _, title), freq in sorted(memo.items()):
+            hist = round(30*freq/hi)
+            print(f'{year} | {title[:30]:<30} | {freq:>6} | {self.BLOCK_CHAR*hist}')
+        print()
 
     def report_per_year(self):
         memo = defaultdict(int)
         for article in self.articles.values():
             memo[article.year] += article.number_words
-        print(f'year | {"wc":^6}')
-        print(f'---- | {"-"*6}')
+        hi = max(value for value in memo.values())
+        print(f'year | {"wc":^6} | {"hist":^30}')
+        print(f'---- | { "-"*6 } | {  "-"*30  }')
         for year, freq in sorted(memo.items()):
-            print(f'{year} | {freq:>6}')
+            hist = round(30*freq/hi)
+            print(f'{year} | {freq:>6} | {self.BLOCK_CHAR*hist}')
+        print()
 
     def report_per_month_of_year(self):
         memo = defaultdict(int)
         for article in self.articles.values():
             memo[article.year,article.month] += article.number_words
-        print(f'yyyy-mm | {"wc":^6}')
-        print(f'------- | {"-"*6}')
+        hi = max(value for value in memo.values())
+        print(f'yyyy-mm | {"wc":^6} | {"hist":^30}')
+        print(f'------- | { "-"*6 } | {  "-"*30  }')
         for (year, month), freq in sorted(memo.items()):
-            print(f'{year}-{month} | {freq:>6}')
+            hist = round(30*freq/hi)
+            print(f'{year}-{month} | {freq:>6} | {self.BLOCK_CHAR*hist}')
+        print()
 
     def report_per_week_of_year(self):
         raise NotImplementedError
