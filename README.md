@@ -1,5 +1,5 @@
-Writer Goal
-===========
+Word Count Goal
+===============
 
 Trace your writing on markdown blog.
 
@@ -33,7 +33,7 @@ report:     # which report do you want to see?
 Then run,
 
 ``` bash
-$ ./writer_goal
+$ ./wc_goal
 ```
 
 Example output:
