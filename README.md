@@ -22,11 +22,11 @@ Config & Use
 On the repo's directory, copy the example config `config.example.yml` into `config.yml`, then change it's values to suite your preferences. For example,
 
 ``` yaml
-watch:      # local markdown files to analyse.
+watch:              # local markdown files to analyse.
   - ~/mainblog.github.io/_posts/*.md
   - ~/anotherblog.github.io/_posts/*.md
-  - ~/ideas/*.md
-report:     # which report do you want to see?
+  - ~/ideas/*.md    # NOTE: filename must be in format 'yyyy-mm-dd-title.md'
+report:             # which report do you want to see?
   - per article
 ```
 
