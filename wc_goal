@@ -40,7 +40,7 @@ class Article(object):
 
 
 class WriterGoal(object):
-    BLOCK_CHAR = '\u2592'
+    BLOCK_CHAR = '\u2588'
 
     def __init__(self):
         self.load_config()
@@ -49,7 +49,7 @@ class WriterGoal(object):
 
     def load_config(self):
         # let python handle ioerror by themselves, for now
-        self.config = yaml.load(open('config.yml'))
+        self.config = yaml.safe_load(open('config.yml'))
 
     def iter_files(self):
         for pattern in self.config['watch']:
